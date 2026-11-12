@@ -3,10 +3,18 @@ name: Distributed Multi-IP Load Test
 on:
   workflow_dispatch:
     inputs:
+      test_mode:
+        description: "Method to test (json or api)"
+        required: true
+        default: "json"
+        type: choice
+        options:
+          - json
+          - api
       target_url:
         description: "App URL to test"
         required: true
-        default: "https://ctl-syllabus-builder.vercel.app"
+        default: "https://ctl-syllabus-builder-copy-git-issue188-josejaime422-6954.vercel.app"
       users_per_ip:
         description: "Simulated professors per runner IP"
         required: true
@@ -34,14 +42,20 @@ jobs:
 
       - name: Show Runner Public IP
         env:
-          RUNNER_NUM: ${{ matrix.runner_id }}
+          RUNNER_ID: ${{ matrix.runner_id }}
         run: |
-          IP=$(curl -s https://api.ipify.org)
-          echo "Runner #$RUNNER_NUM Public IP: $IP"
+          IP=$(curl -s https://ipify.org)
+          echo "Runner #${RUNNER_ID} Public IP: ${IP}"
 
       - name: Run stress test from this IP
         env:
+          TEST_MODE: ${{ github.event.inputs.test_mode }}
           TARGET_URL: ${{ github.event.inputs.target_url }}
           USERS_PER_IP: ${{ github.event.inputs.users_per_ip }}
           WINDOW_MS: ${{ github.event.inputs.window_ms }}
-        run: node scripts/stress-test.mjs "$TARGET_URL" "$USERS_PER_IP" "$WINDOW_MS"
+        run: |
+          if [ "$TEST_MODE" = "json" ]; then
+            node scripts/stress-test-json.mjs "$TARGET_URL" "$USERS_PER_IP" "$WINDOW_MS"
+          else
+            node scripts/stress-test.mjs "$TARGET_URL" "$USERS_PER_IP" "$WINDOW_MS"
+          fi
