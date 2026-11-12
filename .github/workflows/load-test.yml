@@ -1,0 +1,39 @@
+name: Distributed Multi-IP Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_url:
+        description: "App URL to test"
+        required: true
+        default: "https://ctl-syllabus-builder.vercel.app"
+      users_per_ip:
+        description: "Simulated professors per runner IP"
+        required: true
+        default: "15"
+      window_ms:
+        description: "Arrival window in ms"
+        required: true
+        default: "15000"
+
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Show Runner Public IP
+        run: echo "Runner #${{ matrix.runner_id }} IP:" && curl -s https://ipify.org && echo ""
+
+      - name: Run stress test from this IP
+        run: node scripts/stress-test.mjs "${{ github.event.inputs.target_url }}" "${{ github.event.inputs.users_per_ip }}" "${{ github.event.inputs.window_ms }}"
