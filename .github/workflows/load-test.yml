@@ -33,7 +33,15 @@ jobs:
           node-version: "20"
 
       - name: Show Runner Public IP
-        run: echo "Runner #${{ matrix.runner_id }} IP:" && curl -s https://ipify.org && echo ""
+        env:
+          RUNNER_NUM: ${{ matrix.runner_id }}
+        run: |
+          IP=$(curl -s https://api.ipify.org)
+          echo "Runner #$RUNNER_NUM Public IP: $IP"
 
       - name: Run stress test from this IP
-        run: node scripts/stress-test.mjs "${{ github.event.inputs.target_url }}" "${{ github.event.inputs.users_per_ip }}" "${{ github.event.inputs.window_ms }}"
+        env:
+          TARGET_URL: ${{ github.event.inputs.target_url }}
+          USERS_PER_IP: ${{ github.event.inputs.users_per_ip }}
+          WINDOW_MS: ${{ github.event.inputs.window_ms }}
+        run: node scripts/stress-test.mjs "$TARGET_URL" "$USERS_PER_IP" "$WINDOW_MS"

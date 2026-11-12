@@ -1,7 +1,7 @@
 // scripts/stress-test.mjs
 const DEFAULT_URL = "https://ctl-syllabus-builder.vercel.app";
 const BASE_URL = (process.argv[2] || DEFAULT_URL).replace(/\/$/, "");
-const CONCURRENT_USERS = Number(process.argv[3] || 25);
+const CONCURRENT_USERS = Number(process.argv[3] || 15);
 const STAGGER_WINDOW_MS = Number(process.argv[4] || 15000);
 
 const SAMPLE_COURSES = [
